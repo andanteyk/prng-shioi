@@ -26,10 +26,10 @@ For more details, see `shioi128.c`.
 
 ## Pros
 
-1. It is fast in 64 bit environment.
+1. It is fast in 64-bit environment.
 	* About 3.1 times faster than Mersenne Twister(64 bit version).
 1. It is portable and easy to implement.
-	* It does not use environment / language dependent instructions such as 128 bit multiplication.
+	* It does not use environment / language dependent instructions such as 128-bit multiplication.
 1. Its period is 2^128 - 1, which is mathematically provable.
 	* It is sufficient for games and simulations.
 1. The output is 1-dimensionally equidistributed. All 64-bit integer values are output with almost equal probability.
@@ -54,15 +54,15 @@ For more details, see `shioi128.c`.
 1. It is not cryptographically secure pseudorandom number generator.
 	* DO NOT use for cryptographic purposes.
 	* I tried to restore the internal state from 3 consecutive raw 64-bit outputs using [Z3 solver](https://github.com/Z3Prover/z3), but failed in a day.
-1.  There are variants that use 32 bit words, but the investigation is incomplete.
+1.  There are variants that use 32-bit words, but the investigation is incomplete.
 1. 64-bit constant multiplication is required. In an environment where this is slow, output speed may decrease.
 1. Because it is new, it has not been investigated by others.
 
 ## Comparison
 
-Comparison with major (64 bit output) pseudorandom number generators:
+Comparison with major (64-bit output) pseudorandom number generators:
 
-|Name|Period|Size(bytes)|Equidistribution|Jump|Failed Test|Speed(64bit/ns)|
+|Name|Period|Size(bytes)|Equidistribution|Jump|Failed Test|Speed(64-bit/ns)|
 |:---|---:|---:|---:|:---|:---|---:|
 |[`sfc64`](http://pracrand.sourceforge.net/)|> 2^64|32|0|-|-|1.21|
 |`seiran`|2^128 - 1|16|1|✔|-|1.20|
