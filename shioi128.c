@@ -7,16 +7,15 @@ See: https://creativecommons.org/publicdomain/zero/1.0/
 
 #include <inttypes.h>
 
-// Rotate left (ROL) instruction.
+// Rotate left (ROL) instruction
 static inline uint64_t rotl(uint64_t x, int k)
 {
     return (x << k) | (x >> (-k & 0x3f));
 }
 
-// Internal state.
 static uint64_t s[2];
 
-// Get 64-bit pseudorandom value.
+// Returns 64-bit pseudorandom value.
 uint64_t next(void)
 {
     uint64_t s0 = s[0], s1 = s[1];
