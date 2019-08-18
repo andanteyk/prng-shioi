@@ -1,12 +1,16 @@
-# `shioi` - fast pseudorandom number generator
+# `shioi` pseudorandom number generator
 
 [Japanese version is here. / 日本語はこちら](README-ja.md)
+
+I introduce some new LFSR-based pseudorandom number generators.  
+They have interesting jump characteristics.
 
 ## Minimal Implementation (C)
 
 ```c
 uint64_t rotl(uint64_t x, int k) { return (x << k) | (x >> (-k & 63)); }
 // State must be initialized with any value except {0, 0}
+// Note that it uses arithmetic right shift
 uint64_t next(uint64_t state[2]) {
 	uint64_t s0 = state[0], s1 = state[1];
 	uint64_t result = rotl(s0 * 0xD2B74407B1CE6E93, 29) + s1;
@@ -62,20 +66,21 @@ For more details, see `shioi128.c`.
 
 Comparison with major (64-bit output) pseudorandom number generators:
 
-|Name|Period|Size(bytes)|Equidistribution|Jump|Failed Test|Speed(64-bit/ns)|
-|:---|---:|---:|---:|:---|:---|---:|
-|[`sfc64`](http://pracrand.sourceforge.net/)|> 2^64|32|0|-|-|1.21|
-|`seiran`|2^128 - 1|16|1|✔|-|1.20|
-|[`xoroshiro128+`](http://xoshiro.di.unimi.it/xoroshiro128plus.c)|2^128 - 1|16|1|✔|BRank, hwd|1.13|
-|👉 `shioi`|2^128 - 1|16|1|✔|-|1.00|
-|[`xoshiro256**`](http://xoshiro.di.unimi.it/xoshiro256starstar.c)|2^256 - 1|32|4|✔|-|0.99|
-|[`lehmer128`](https://web.archive.org/web/20180609040734/http://xoshiro.di.unimi.it/lehmer128.c) (LCG)|2^126|16|1|✔|TMFn|0.74|
-|[`splitmix`](http://xoshiro.di.unimi.it/splitmix64.c)|2^64|8|1|✔|-|0.68|
-|[`pcg64_xsh_rr`](http://www.pcg-random.org/)|2^128|16|1|✔|-|0.38|
-|[`mt19937_64`](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/VERSIONS/C-LANG/mt19937-64.c) (Mersenne Twister)|2^19937 - 1|2500|311|✔ (slow)|BRank|0.32|
-|[`tinymt64`](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/TINYMT/index-jp.html)|2^127 - 1|16|1|✔|BRank, hwd|0.24|
+|Name|Period|Size(bytes)|Equidistribution|Failed Test|Speed(64-bit/ns)|
+|:---|---:|---:|---:|:---|---:|
+|[`sfc64`](http://pracrand.sourceforge.net/)|> 2^64|32|0|-|1.21|
+|[`seiran128`](https://github.com/andanteyk/prng-seiran)|2^128 - 1|16|1|-|1.20|
+|[`xoroshiro128+`](http://xoshiro.di.unimi.it/xoroshiro128plus.c)|2^128 - 1|16|1|BRank, hwd|1.13|
+|👉 `shioi128`|2^128 - 1|16|1|-|1.00|
+|[`xoshiro256**`](http://xoshiro.di.unimi.it/xoshiro256starstar.c)|2^256 - 1|32|4|-|0.99|
+|[`lehmer128`](https://web.archive.org/web/20180609040734/http://xoshiro.di.unimi.it/lehmer128.c) (LCG)|2^126|16|1|TMFn|0.74|
+|[`splitmix`](http://xoshiro.di.unimi.it/splitmix64.c)|2^64|8|1|-|0.68|
+|[`pcg64_xsh_rr`](http://www.pcg-random.org/)|2^128|16|1|-|0.38|
+|[`mt19937_64`](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/VERSIONS/C-LANG/mt19937-64.c) (Mersenne Twister)|2^19937 - 1|2500|311|BRank|0.32|
+|[`tinymt64`](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/TINYMT/index-jp.html)|2^127 - 1|16|1|BRank, hwd|0.24|
 
-[Harness used in xoshiro/xoroshiro](http://xoshiro.di.unimi.it/harness.c) was used for speed measurement. The measurement environment is `Intel(R) Core(TM) i7-7700HQ CPU @ 2.80GHz / gcc 7.3.0`.
+[Harness used in xoshiro/xoroshiro](http://xoshiro.di.unimi.it/harness.c) was used for speed measurement. The measurement environment is `Intel(R) Core(TM) i7-7700HQ CPU @ 2.80GHz / gcc 7.3.0`.  
+The speed may vary depending on the environment and circumstances.
 
 ## License
 

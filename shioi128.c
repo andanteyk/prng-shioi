@@ -1,4 +1,4 @@
-/* Shioi128 v1.0 - pseudorandom number generator
+/* Shioi128 v1 - pseudorandom number generator
 
 To the extent possible under law, the author has waived all copyright 
 and related or neighboring rights to this software.
@@ -13,16 +13,17 @@ static inline uint64_t rotl(uint64_t x, int k)
     return (x << k) | (x >> (-k & 0x3f));
 }
 
-static uint64_t s[2];
+static uint64_t state[2];
 
 // Returns 64-bit pseudorandom value.
 uint64_t next(void)
 {
-    uint64_t s0 = s[0], s1 = s[1];
+    uint64_t s0 = state[0], s1 = state[1];
     uint64_t result = rotl(s0 * 0xD2B74407B1CE6E93, 29) + s1;
 
-    s[0] = s1;
-    s[1] = (s0 << 2) ^ ((int64_t)s0 >> 19) ^ s1;
+    // note: MUST use arithmetic right shift
+    state[0] = s1;
+    state[1] = (s0 << 2) ^ ((int64_t)s0 >> 19) ^ s1;
 
     return result;
 }
@@ -33,7 +34,7 @@ void init(uint64_t seed)
     // You may initialize state by any method, unless state will be {0, 0}.
     for (int i = 0; i < 2; i++)
     {
-        s[i] = seed = seed * 6364136223846793005 + 1442695040888963407;
+        state[i] = seed = seed * 6364136223846793005 + 1442695040888963407;
     }
 }
 
@@ -47,15 +48,15 @@ static inline void jump(const uint64_t jumppoly[])
         {
             if ((jumppoly[i] >> b) & 1)
             {
-                t[0] ^= s[0];
-                t[1] ^= s[1];
+                t[0] ^= state[0];
+                t[1] ^= state[1];
             }
             next();
         }
     }
 
-    s[0] = t[0];
-    s[1] = t[1];
+    state[0] = t[0];
+    state[1] = t[1];
 }
 
 // It is equivalent to 2^32 calls of next().
@@ -69,10 +70,10 @@ void jump32(void)
 void jump64(void)
 {
     // It is equivalent to jump({ 0x3, 0 })
-    uint64_t s0 = s[0], s1 = s[1];
+    uint64_t s0 = state[0], s1 = state[1];
 
-    s[0] = s0 ^ s1;
-    s[1] = (s0 << 2) ^ ((int64_t)s0 >> 19);
+    state[0] = s0 ^ s1;
+    state[1] = (s0 << 2) ^ ((int64_t)s0 >> 19);
 }
 
 // It is equivalent to 2^96 calls of next().
@@ -92,13 +93,13 @@ void jump96(void)
         puts("assertion failed."); \
         return -1;                 \
     }
-#define PRINTSTATE(title) printf(title "%016" PRIx64 " %016" PRIx64 "\n", s[0], s[1])
+#define PRINTSTATE(title) printf(title "%016" PRIx64 " %016" PRIx64 "\n", state[0], state[1])
 
 int main(void)
 {
     init(401);
     PRINTSTATE("init: ");
-    ASSERT(s[0] == 0x6C64F673ED93B6CC && s[1] == 0x97C703D5F6C9D72B);
+    ASSERT(state[0] == 0x6C64F673ED93B6CC && state[1] == 0x97C703D5F6C9D72B);
 
     printf("next: ");
     {
@@ -112,22 +113,23 @@ int main(void)
             ASSERT(value == answers[i]);
         }
     }
-    printf("\n");
+    puts("");
 
     PRINTSTATE("jp 0: ");
-    ASSERT(s[0] == 0x1FE470A806C38EB1 && s[1] == 0xFAC7289977D6FD63);
+    ASSERT(state[0] == 0x1FE470A806C38EB1 && state[1] == 0xFAC7289977D6FD63);
 
     jump32();
     PRINTSTATE("jp32: ");
-    ASSERT(s[0] == 0x985B17ADA536684C && s[1] == 0x2CECBEFC3FB03DF8);
+    ASSERT(state[0] == 0x985B17ADA536684C && state[1] == 0x2CECBEFC3FB03DF8);
 
     jump64();
     PRINTSTATE("jp64: ");
-    ASSERT(s[0] == 0xB4B7A9519A8655B4 && s[1] == 0x9E93ADBDF62C1596);
+    ASSERT(state[0] == 0xB4B7A9519A8655B4 && state[1] == 0x9E93ADBDF62C1596);
 
     jump96();
     PRINTSTATE("jp96: ");
-    ASSERT(s[0] == 0x67EA4FFD18216615 && s[1] == 0x696B13B974BFBFF7);
+    ASSERT(state[0] == 0x67EA4FFD18216615 && state[1] == 0x696B13B974BFBFF7);
 
+    puts("succeeded.");
     return 0;
 }
